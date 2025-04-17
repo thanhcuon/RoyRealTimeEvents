@@ -1,0 +1,17 @@
+name: RoyRealTimeEvents
+version: '1.0'
+main: com.github.athanh.royrealtimeevents.RoyRealTimeEvents
+api-version: '1.18'
+authors: [ athanh ]
+website: roymcvn.com
+depend: [MythicMobs]
+commands:
+  realtimeevent:
+    description: Control real-time events
+    usage: /<command> [reload|debug]
+    aliases: [rte]
+    permission: royrealtimeevents.admin
+permissions:
+  royrealtimeevents.admin:
+    description: Allows use of admin commands
+    default: op

@@ -1,0 +1,99 @@
+# Configuration file for RoyRealTimeEvents plugin authors: athanh
+
+# World settings
+worlds:
+  enabled-worlds:     # List of worlds where events can occur
+    - "world"        # Default overworld
+    - "world_nether" # Nether dimension
+    - "world_the_end" # End dimension
+  disabled-worlds:    # List of worlds where events are disabled  
+    - "spawn"        # Spawn world
+    - "creative"     # Creative world
+    - "minigames"    # Minigame worlds
+
+# General settings
+settings:
+  night-time:
+    start: 18  # Night starts at 6 PM
+    end: 6     # Night ends at 6 AM 
+  day-event:
+    hour: 12   # Time for day events (noon)
+  night-event:
+    hour: 0    # Time for night events (midnight)
+  spawn-radius:
+    min: -200  # Minimum spawn radius
+    max: 200   # Maximum spawn radius
+
+# Mob configurations
+mobs:
+  # Day boss settings
+  day-boss:
+    enabled: true        # Enable/disable day boss
+    spawn-chance: 0.5    # 50% spawn chance
+    mythic-mob: "DayBoss" # MythicMobs mob ID
+    announcement: "&e[!] &bThe Day Boss has appeared!" # Spawn message
+    effects:
+      sound: ENTITY_ENDER_DRAGON_GROWL  # Sound effect
+      volume: 1.0       # Sound volume
+      pitch: 1.0        # Sound pitch
+
+  # Night boss settings
+  night-boss:
+    enabled: true
+    spawn-chance: 0.5
+    mythic-mob: "NightBoss"
+    announcement: "&e[!] &cThe Night Boss has appeared!"
+    effects:
+      sound: ENTITY_WITHER_SPAWN
+      volume: 1.0
+      pitch: 0.5
+
+  # Day Guardian Event settings
+  day-guardian-event:
+    enabled: true       # Enable/disable event
+    announcement: "&e[!] &bThe Day Guardian Event has started!"
+    title:            # Title display settings
+      main: "&6⚔ Guardian Event ⚔"
+      subtitle: "&eProtect the kingdom!"
+    mythic-mobs:      # List of possible guardian mobs
+      - "DayGuardian1"
+      - "DayGuardian2"
+    spawn-count: 5    # Number of guardians to spawn
+    effects:
+      sound: ENTITY_ELDER_GUARDIAN_CURSE
+      volume: 1.0
+      pitch: 1.0
+
+  # Night Demon Event settings  
+  night-demon-event:
+    enabled: true
+    announcement: "&e[!] &cThe Night Demon Event has started!"
+    title:
+      main: "&c☠ Night Demon Event ☠"
+      subtitle: "&4Darkness has fallen!"
+    mythic-mobs:
+      - "NightDemon1"
+      - "NightDemon2"
+    spawn-count: 5
+    effects:
+      sound: ENTITY_WITHER_AMBIENT
+      volume: 1.0
+      pitch: 0.5
+
+# Mob buff settings for night time
+mob-buffs:
+  enabled: true      # Enable/disable mob buffs
+  effects:
+    - effect: INCREASE_DAMAGE     # Strength buff
+      duration: 72000  # Duration in ticks (1 hour)
+      amplifier: 1     # Effect level
+    - effect: DAMAGE_RESISTANCE   # Resistance buff
+      duration: 72000
+      amplifier: 1
+
+# Message strings
+messages:
+  nighttime-start: "&c[!] &4Night has fallen... Be careful!"
+  daytime-start: "&e[!] &6Dawn has arrived!"
+  no-permission: "&cYou do not have permission to use this command!"
+  reload: "&aPlugin reloaded successfully!"
