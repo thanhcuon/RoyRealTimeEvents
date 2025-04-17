@@ -7,17 +7,31 @@ RoyRealTimeEvents is a Minecraft plugin designed to enhance gameplay by introduc
 
 Features:
 Real-Time Day/Night Events: Automatically syncs Minecraft's in-game time with the real-world time.
+
+
 Custom Boss Spawns:
 Day Boss and Night Boss with configurable spawn chances, announcements, and effects.
+
+
 Dynamic Events:
 Day Guardian Event and Night Demon Event with customizable mobs, spawn counts, and titles.
+
+
 Mob Buffs:
 Strengthen mobs during the night with configurable potion effects.
+
+
 World-Specific Settings:
 Enable or disable events in specific worlds.
+
+
 Player Notifications:
 Notify players when night or day begins.
+
+
 Admin Commands:
 /rte reload to reload the plugin configuration.
+
+
 Requirements:
 Dependencies: Requires the MythicMobs plugin.
