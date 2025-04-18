@@ -25,7 +25,7 @@ public class RealTimeTask extends BukkitRunnable {
     private final Set<UUID> buffedMobs = new HashSet<>();
     private final Map<Location, Long> activeSpawnLocations = new HashMap<>();
     private BukkitRunnable particleTask;
-
+    private Map<String, Integer> activeMobsCount = new HashMap<>();
 
 
     public RealTimeTask(RoyRealTimeEvents plugin) {
@@ -344,24 +344,49 @@ public class RealTimeTask extends BukkitRunnable {
 
         return new Location(world, x, y + 1, z);
     }
+    private void updateActiveMobsCount(String mobType) {
+        activeMobsCount.merge(mobType, 1, Integer::sum);
+        String message = ChatColor.translateAlternateColorCodes('&',
+                "&7Currently there are &e" + activeMobsCount.get(mobType) + " &7" + mobType + " &7active");
+        Bukkit.broadcastMessage(message);
+    }
+
 
     private void spawnMythicMob(String mobType, Location location) {
         if (mobType != null && location != null) {
             MythicBukkit.inst().getMobManager().spawnMob(mobType, location);
+            updateActiveMobsCount(mobType);
         }
     }
+
 
     private void announceNightTime() {
         String message = plugin.getConfig().getString("messages.nighttime-start");
         if (message != null) {
             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
+
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_WOLF_HOWL, 1.0f, 1.0f);
+                player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 0.5f, 1.0f);
+            }
         }
     }
+
 
     private void announceDayTime() {
         String message = plugin.getConfig().getString("messages.daytime-start");
         if (message != null) {
             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
+
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 2.0f);
+            }
         }
     }
+    public RoyRealTimeEvents getPlugin() {
+        return this.plugin;
+    }
+
+
 }
