@@ -5,9 +5,12 @@ import com.github.athanh.royrealtimeevents.listeners.EntityDamageListener;
 import com.github.athanh.royrealtimeevents.listeners.EventListener;
 import com.github.athanh.royrealtimeevents.listeners.PlayerListener;
 import com.github.athanh.royrealtimeevents.task.RealTimeTask;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.logging.Level;
 
 public class RoyRealTimeEvents extends JavaPlugin {
     private RealTimeTask realTimeTask;
@@ -16,6 +19,12 @@ public class RoyRealTimeEvents extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
+        if (getConfig().getBoolean("metrics.enabled", true)) {
+            new Metrics(this, 25548);
+            getLogger().info("Metrics enabled!");
+        } else {
+            getLogger().info("Metrics Disable!");
+        }
         getCommand("realtimeevent").setExecutor(new RealTimeEventCommand(this));
 
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
