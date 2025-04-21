@@ -1,5 +1,8 @@
 # Configuration file for RoyRealTimeEvents plugin authors: athanh
 
+# bStats Metrics
+metrics:
+  enabled: true    # Enable or disable bStats metrics collection
 # World settings
 worlds:
   enabled-worlds:     # List of worlds where events can occur
