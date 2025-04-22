@@ -3,6 +3,7 @@ package com.github.athanh.royrealtimeevents.task;
 import com.github.athanh.royrealtimeevents.RoyRealTimeEvents;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -10,6 +11,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,7 +28,92 @@ public class RealTimeTask extends BukkitRunnable {
     private final Map<Location, Long> activeSpawnLocations = new HashMap<>();
     private BukkitRunnable particleTask;
     private Map<String, Integer> activeMobsCount = new HashMap<>();
+    private boolean isBloodMoon = false;
+    private LocalDate lastBloodMoon = null;
 
+    private void checkBloodMoon() {
+        if (!plugin.getConfig().getBoolean("blood-moon.enabled")) {
+            return;
+        }
+
+        LocalTime now = LocalTime.now();
+        LocalDate today = LocalDate.now();
+
+        // Chỉ check blood moon một lần mỗi đêm
+        if (lastBloodMoon != null && lastBloodMoon.equals(today)) {
+            return;
+        }
+
+        // Check khi bắt đầu đêm
+        if (now.getHour() == plugin.getConfig().getInt("settings.night-time.start") && now.getMinute() == 0) {
+            double chance = plugin.getConfig().getDouble("blood-moon.chance");
+            if (Math.random() < chance) {
+                startBloodMoon();
+                lastBloodMoon = today;
+            }
+        }
+    }
+
+    private void startBloodMoon() {
+        isBloodMoon = true;
+
+        // Thông báo Blood Moon
+        String title = plugin.getConfig().getString("blood-moon.announcement.title");
+        String subtitle = plugin.getConfig().getString("blood-moon.announcement.subtitle");
+        String message = plugin.getConfig().getString("blood-moon.announcement.message");
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            // Gửi title
+            player.sendTitle(
+                ChatColor.translateAlternateColorCodes('&', title),
+                ChatColor.translateAlternateColorCodes('&', subtitle),
+                10, 70, 20
+            );
+
+            // Phát âm thanh
+            player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.5f);
+            player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 0.5f);
+
+            // Hiệu ứng màn hình
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 1));
+        }
+
+        // Broadcast message
+        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
+
+        // Thay đổi màu trăng và bầu trời
+        for (World world : Bukkit.getWorlds()) {
+            startBloodMoonEffects(world);
+        }
+    }
+
+    private void startBloodMoonEffects(World world) {
+        // Tạo hiệu ứng particle trong bầu trời
+        new BukkitRunnable() {
+            int duration = 0;
+            @Override
+            public void run() {
+                if (!isBloodMoon || duration > 100) {
+                    this.cancel();
+                    return;
+                }
+
+                for (Player player : world.getPlayers()) {
+                    Location loc = player.getLocation();
+                    for (int i = 0; i < 5; i++) {
+                        double x = loc.getX() + (Math.random() - 0.5) * 40;
+                        double y = loc.getY() + 20 + (Math.random() - 0.5) * 10;
+                        double z = loc.getZ() + (Math.random() - 0.5) * 40;
+                        Location particleLoc = new Location(world, x, y, z);
+                        world.spawnParticle(Particle.CRIMSON_SPORE, particleLoc, 1, 0, 0, 0, 0);
+                        world.spawnParticle(Particle.DRIPPING_OBSIDIAN_TEAR, particleLoc, 1, 0, 0, 0, 0);
+                    }
+                    duration++;
+                }
+                duration++;
+            }
+        }.runTaskTimer(plugin, 0L, 5L);
+    }
 
     public RealTimeTask(RoyRealTimeEvents plugin) {
         this.plugin = plugin;
@@ -41,7 +128,7 @@ public class RealTimeTask extends BukkitRunnable {
         int minute = now.getMinute();
         int nightStart = plugin.getConfig().getInt("settings.night-time.start");
         int nightEnd = plugin.getConfig().getInt("settings.night-time.end");
-
+        checkBloodMoon();
 
         for (World world : Bukkit.getWorlds()) {
 
@@ -62,6 +149,7 @@ public class RealTimeTask extends BukkitRunnable {
 
 
             if (isNightTime) {
+                checkBloodMoon();
                 if (plugin.getConfig().getBoolean("mob-buffs.enabled")) {
                     strengthenMobs(world);
                 }
@@ -108,19 +196,42 @@ public class RealTimeTask extends BukkitRunnable {
         }
     }
 
-
-
+    // Thêm vào phương thức strengthenMobs
     private void strengthenMobs(World world) {
         List<Map<?, ?>> effects = plugin.getConfig().getMapList("mob-buffs.effects");
+        double multiplier = isBloodMoon ?
+            plugin.getConfig().getDouble("blood-moon.effects.mob-multiplier") : 1.0;
+
         for (Entity entity : world.getEntities()) {
             if (entity instanceof Monster && !buffedMobs.contains(entity.getUniqueId())) {
+                Monster monster = (Monster) entity;
+
+                // Tăng máu và sát thương cho quái trong Blood Moon
+                if (isBloodMoon) {
+                    monster.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(
+                        monster.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue() * multiplier
+                    );
+                    monster.setHealth(monster.getMaxHealth());
+
+                    if (monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE) != null) {
+                        monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(
+                            monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getBaseValue() * multiplier
+                        );
+                    }
+                }
+
+                // Thêm các effect từ config
                 for (Map<?, ?> effect : effects) {
                     PotionEffectType type = PotionEffectType.getByName(effect.get("effect").toString());
                     if (type != null) {
-                        ((Monster) entity).addPotionEffect(new PotionEffect(
-                                type,
-                                ((Number) effect.get("duration")).intValue(),
-                                ((Number) effect.get("amplifier")).intValue()
+                        int amplifier = ((Number) effect.get("amplifier")).intValue();
+                        if (isBloodMoon) {
+                            amplifier++; // Tăng level effect trong Blood Moon
+                        }
+                        monster.addPotionEffect(new PotionEffect(
+                            type,
+                            ((Number) effect.get("duration")).intValue(),
+                            amplifier
                         ));
                     }
                 }
