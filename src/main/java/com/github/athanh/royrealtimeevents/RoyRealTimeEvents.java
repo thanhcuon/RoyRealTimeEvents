@@ -1,7 +1,6 @@
 package com.github.athanh.royrealtimeevents;
 
 import com.github.athanh.royrealtimeevents.commands.RealTimeEventCommand;
-import com.github.athanh.royrealtimeevents.listeners.EntityDamageListener;
 import com.github.athanh.royrealtimeevents.listeners.EventListener;
 import com.github.athanh.royrealtimeevents.listeners.PlayerListener;
 import com.github.athanh.royrealtimeevents.task.RealTimeTask;
@@ -28,7 +27,6 @@ public class RoyRealTimeEvents extends JavaPlugin {
         getCommand("realtimeevent").setExecutor(new RealTimeEventCommand(this));
 
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
-        getServer().getPluginManager().registerEvents(new EntityDamageListener(), this);
 
 
         startRealTimeTask();
