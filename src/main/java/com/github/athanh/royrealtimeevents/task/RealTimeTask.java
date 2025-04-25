@@ -282,22 +282,72 @@ public class RealTimeTask extends BukkitRunnable {
     private void markSpawnLocation(Location location, String mobType, String eventType) {
         activeSpawnLocations.put(location, System.currentTimeMillis());
 
-        String coords = String.format("&e[X: %d, Y: %d, Z: %d]",
+        // Format tọa độ với thêm hướng (N,S,E,W)
+        String direction = getCardinalDirection(location);
+        String coords = String.format("&e[X: %d, Y: %d, Z: %d | %s]",
                 location.getBlockX(),
                 location.getBlockY(),
-                location.getBlockZ()
+                location.getBlockZ(),
+                direction
         );
 
+        // Thông báo chính
         String message = ChatColor.translateAlternateColorCodes('&',
-                "&c" + mobType + " &7(&f" + eventType + "&7) &fđã xuất hiện tại: " + coords);
+                "&c" + mobType + " &7(&f" + eventType + "&7) &fhas appeared at: " + coords);
         Bukkit.broadcastMessage(message);
 
+        // Thông báo khoảng cách tới người chơi
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            int distance = (int) player.getLocation().distance(location);
+            String distanceMsg = ChatColor.translateAlternateColorCodes('&',
+                    "&7Distance from you: &e" + distance + "m");
+            player.sendMessage(distanceMsg);
+
+            // Chỉ hướng với hạt effect
+            showDirectionParticles(player.getLocation(), location);
+        }
 
         location.getWorld().strikeLightningEffect(location);
         location.getWorld().playSound(location, Sound.BLOCK_BELL_USE, 3.0f, 1.0f);
         spawnFireworkEffect(location);
     }
 
+    private String getCardinalDirection(Location loc) {
+        double rotation = (loc.getYaw() - 90) % 360;
+        if (rotation < 0) {
+            rotation += 360.0;
+        }
+        if (0 <= rotation && rotation < 45) {
+            return "W";
+        } else if (45 <= rotation && rotation < 135) {
+            return "N";
+        } else if (135 <= rotation && rotation < 225) {
+            return "E";
+        } else if (225 <= rotation && rotation < 315) {
+            return "S";
+        } else if (315 <= rotation && rotation < 360) {
+            return "W";
+        } else {
+            return "?";
+        }
+    }
+
+    private void showDirectionParticles(Location start, Location end) {
+        double distance = start.distance(end);
+        org.bukkit.util.Vector direction = end.toVector().subtract(start.toVector()).normalize();
+
+        // Chỉ hiển thị 20 particle để tránh spam
+        for (double i = 0; i < Math.min(distance, 20); i++) {
+            Location particleLoc = start.clone().add(direction.multiply(i));
+            particleLoc.getWorld().spawnParticle(
+                    Particle.END_ROD,
+                    particleLoc,
+                    1,
+                    0, 0, 0,
+                    0
+            );
+        }
+    }
     private void spawnFireworkEffect(Location location) {
         World world = location.getWorld();
         if (world != null) {
