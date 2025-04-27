@@ -30,10 +30,20 @@ Notify players when night or day begins.
 
 
 Commands:
+
+
 reload: "/rte reload - Reload plugin configuration"
+
+
 forcespawn: "/rte forcespawn <type> - Force spawn a mob"
+
+
 bloodmoon: "/rte bloodmoon <start|stop> - Control Blood Moon event"
+
+
 debug: "/rte debug - Toggle debug mode"
+
+
 help: "/rte help - Show this help message"
 
 
