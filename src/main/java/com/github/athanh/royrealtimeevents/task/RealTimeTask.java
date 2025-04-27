@@ -54,41 +54,128 @@ public class RealTimeTask extends BukkitRunnable {
         }
     }
 
-    private void startBloodMoon() {
+    public void startBloodMoon() {
         isBloodMoon = true;
 
-        // Thông báo Blood Moon
         String title = plugin.getConfig().getString("blood-moon.announcement.title");
         String subtitle = plugin.getConfig().getString("blood-moon.announcement.subtitle");
         String message = plugin.getConfig().getString("blood-moon.announcement.message");
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            // Gửi title
             player.sendTitle(
                 ChatColor.translateAlternateColorCodes('&', title),
                 ChatColor.translateAlternateColorCodes('&', subtitle),
                 10, 70, 20
             );
 
-            // Phát âm thanh
             player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.5f);
             player.playSound(player.getLocation(), Sound.AMBIENT_CAVE, 1.0f, 0.5f);
 
-            // Hiệu ứng màn hình
             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 40, 1));
         }
 
-        // Broadcast message
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
 
-        // Thay đổi màu trăng và bầu trời
         for (World world : Bukkit.getWorlds()) {
             startBloodMoonEffects(world);
         }
     }
+    public void stopBloodMoon() {
+        isBloodMoon = false;
 
+        for (World world : Bukkit.getWorlds()) {
+            for (Entity entity : world.getEntities()) {
+                if (entity instanceof Monster) {
+                    Monster monster = (Monster) entity;
+
+                    double defaultHealth = 20.0; 
+                    monster.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(defaultHealth);
+                    monster.setHealth(defaultHealth);
+
+                    if (monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE) != null) {
+                        monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(
+                                monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getDefaultValue()
+                        );
+                    }
+
+                    for (PotionEffect effect : monster.getActivePotionEffects()) {
+                        monster.removePotionEffect(effect.getType());
+                    }
+                }
+            }
+        }
+
+        String endTitle = ChatColor.translateAlternateColorCodes('&',
+                plugin.getConfig().getString("blood-moon.end-announcement.title"));
+        String endSubtitle = ChatColor.translateAlternateColorCodes('&',
+                plugin.getConfig().getString("blood-moon.end-announcement.subtitle"));
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+
+            player.sendTitle(endTitle, endSubtitle, 10, 70, 20);
+
+            player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 1.0f);
+            player.playSound(player.getLocation(), Sound.BLOCK_BELL_USE, 0.5f, 1.0f);
+
+            Location loc = player.getLocation();
+            player.spawnParticle(Particle.END_ROD, loc.add(0, 1, 0), 50, 2, 2, 2, 0.1);
+            player.spawnParticle(Particle.PORTAL, loc, 100, 2, 2, 2, 0.1);
+        }
+
+        for (String message : plugin.getConfig().getStringList("blood-moon.end-announcement.messages")) {
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
+        }
+
+        if (plugin.getConfig().getBoolean("blood-moon.special-mobs.remove-on-end", true)) {
+            List<String> specialMobs = plugin.getConfig().getStringList("blood-moon.special-mobs");
+            for (World world : Bukkit.getWorlds()) {
+                for (Entity entity : world.getEntities()) {
+                    if (entity.hasMetadata("BloodMoonMob")) {
+                        // Hiệu ứng khi xóa mob
+                        Location loc = entity.getLocation();
+                        world.spawnParticle(Particle.CLOUD, loc, 20, 0.5, 0.5, 0.5, 0.1);
+                        world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+                        entity.remove();
+                    }
+                }
+            }
+        }
+
+        for (World world : Bukkit.getWorlds()) {
+            world.setStorm(false);
+            world.setThundering(false);
+        }
+
+        new BukkitRunnable() {
+            float intensity = 1.0f;
+            @Override
+            public void run() {
+                if (intensity <= 0) {
+                    this.cancel();
+                    return;
+                }
+
+                intensity -= 0.1f;
+                for (World world : Bukkit.getWorlds()) {
+                    for (Player player : world.getPlayers()) {
+                        Location loc = player.getLocation().add(0, 50, 0);
+                        world.spawnParticle(
+                                Particle.CRIMSON_SPORE,
+                                loc,
+                                10,
+                                20, 10, 20,
+                                intensity
+                        );
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 5L);
+
+        buffedMobs.clear();
+        lastBloodMoon = LocalDate.now(); 
+    }
+    
     private void startBloodMoonEffects(World world) {
-        // Tạo hiệu ứng particle trong bầu trời
         new BukkitRunnable() {
             int duration = 0;
             @Override
