@@ -4,20 +4,29 @@ import com.github.athanh.royrealtimeevents.commands.RealTimeEventCommand;
 import com.github.athanh.royrealtimeevents.listeners.EventListener;
 import com.github.athanh.royrealtimeevents.listeners.PlayerListener;
 import com.github.athanh.royrealtimeevents.task.RealTimeTask;
+import io.lumine.mythic.bukkit.MythicBukkit;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.
+
 import java.util.logging.Level;
 
 public class RoyRealTimeEvents extends JavaPlugin {
     private RealTimeTask realTimeTask;
+    private Set<UUID> debugPlayers = new HashSet<>();
+    private MythicBukkit mythicMobsAPI;
+    
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-
+        mythicMobsAPI = MythicBukkit.inst();
         if (getConfig().getBoolean("metrics.enabled", true)) {
             new Metrics(this, 25548);
             getLogger().info("Metrics enabled!");
@@ -84,7 +93,17 @@ public class RoyRealTimeEvents extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(realTimeTask), this);
         realTimeTask.runTaskTimer(this, 0L, 20L * 60);
     }
+    public Set<UUID> getDebugPlayers() {
+        return debugPlayers;
+    }
 
+    public MythicBukkit getMythicMobsAPI() {
+        return mythicMobsAPI;
+    }
+
+    public RealTimeTask getRealTimeTask() {
+        return realTimeTask;
+    }
     public void reloadPlugin() {
         reloadConfig();
         startRealTimeTask();
