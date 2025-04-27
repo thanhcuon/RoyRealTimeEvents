@@ -27,6 +27,30 @@ settings:
     min: -200  # Minimum spawn radius
     max: 200   # Maximum spawn radius
 
+blood-moon:
+  enabled: true   # Enable/disable the Blood Moon feature
+  chance: 0.3     # 30% chance for the Blood Moon to appear each night
+  announcement:
+    title: "&4☠ &cBlood Moon is Rising! &4☠"          # Main title displayed at the center of the screen
+    subtitle: "&cMonsters are stronger tonight!"      # Subtitle displayed below the title
+    message: "&4[!] &cThe Blood Moon is rising!..."   # Notification message in the chat
+  end-announcement:
+    title: "&6The Blood Moon is setting..."
+    subtitle: "&eThe night returns to normal"
+    messages:
+      - "&6============================="
+      - "&eThe Blood Moon has ended!"
+      - "&7All monsters have returned to normal strength."
+      - "&6============================="
+  effects:
+    mob-multiplier: 2.0  # Mobs are twice as strong as normal
+    spawn-rate: 2        # Mob spawn rate is doubled
+    special-drops: true  # Enable special item drops
+  special-mobs:          # List of special mobs that will appear
+    - "BloodZombie"      # Blood Zombie
+    - "BloodSkeleton"    # Blood Skeleton
+    - "BloodCreeper"     # Blood Creeper
+
 # Mob configurations
 mobs:
   # Day boss settings
@@ -100,3 +124,11 @@ messages:
   daytime-start: "&e[!] &6Dawn has arrived!"
   no-permission: "&cYou do not have permission to use this command!"
   reload: "&aPlugin reloaded successfully!"
+help-messages:
+  header: "&6=== RoyRealTimeEvents Commands ==="
+  commands:
+    reload: "&e/rte reload &f- Reload plugin configuration"
+    forcespawn: "&e/rte forcespawn <type> &f- Force spawn a mob"
+    bloodmoon: "&e/rte bloodmoon <start|stop> &f- Control Blood Moon event"
+    debug: "&e/rte debug &f- Toggle debug mode"
+    help: "&e/rte help &f- Show this help message"
