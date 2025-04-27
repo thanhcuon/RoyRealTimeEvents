@@ -29,8 +29,12 @@ Player Notifications:
 Notify players when night or day begins.
 
 
-Admin Commands:
-/rte reload to reload the plugin configuration.
+Commands:
+reload: "/rte reload - Reload plugin configuration"
+forcespawn: "/rte forcespawn <type> - Force spawn a mob"
+bloodmoon: "/rte bloodmoon <start|stop> - Control Blood Moon event"
+debug: "/rte debug - Toggle debug mode"
+help: "/rte help - Show this help message"
 
 
 Requirements:
