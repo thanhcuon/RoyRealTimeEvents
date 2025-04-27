@@ -34,6 +34,7 @@ public class RoyRealTimeEvents extends JavaPlugin {
             getLogger().info("Metrics Disable!");
         }
         getCommand("realtimeevent").setExecutor(new RealTimeEventCommand(this));
+        getCommand("realtimeevent").setTabCompleter(new RealTimeEventCommand(this));
 
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
 
